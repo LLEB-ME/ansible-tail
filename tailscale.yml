@@ -59,67 +59,67 @@
                 mode: 0750
                 remote_src: yes
               when: not ansible_check_mode
-        - name: Create directories for Tailscale
-          ansible.builtin.file:
-            path: "{{ item }}"
-            state: directory
-            owner: root
-            group: root
-            mode: 0755
-          with_items:
-            - /var/run/tailscale
-            - /var/cache/tailscale
-            - /var/lib/tailscale
-        - name: Allow IP forwarding
+
+    - name: Create directories for Tailscale
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+      with_items:
+        - /var/run/tailscale
+        - /var/cache/tailscale
+        - /var/lib/tailscale
+
+    - name: Allow IP forwarding
+      block:
+        - name: Append to `/etc/sysctl.conf`
+          ansible.builtin.shell: |
+            modprobe xt_mark
+            echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.conf
+            echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.conf
+            echo 'net.ipv6.conf.all.disable_policy = 1' | tee -a /etc/sysctl.conf
+            iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+            ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+        - name: Reload `sysctl`
+          ansible.builtin.shell: sysctl -p /etc/sysctl.conf
+      when: inventory_hostname in groups['exit_node']
+
+    - name: Install and start service
+      block:
+        - name: Install SystemD service
           block:
-            - name: Append to `/etc/sysctl.conf`
-              ansible.builtin.shell: |
-                modprobe xt_mark
-                echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.conf
-                echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.conf
-                echo 'net.ipv6.conf.all.disable_policy = 1' | tee -a /etc/sysctl.conf
-                iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-                ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-              when: inventory_hostname in groups['exit_node']
-              
-            - name: Reload `sysctl`
-              ansible.builtin.shell: sysctl -p /etc/sysctl.conf
-              when: inventory_hostname in groups['exit_node']
-        - name: Install and start service
-          block:
-            - name: Install SystemD service
-              block:
-                - name: Copy service to proper directory
-                  ansible.builtin.copy:
-                    src: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/systemd/tailscaled.service"
-                    dest: "/etc/systemd/system/tailscaled.service"
-                    owner: root
-                    group: root
-                    mode: 0750
-                    remote_src: yes
-                  when: not ansible_check_mode
-                - name: Copy defaults to proper directory
-                  ansible.builtin.copy:
-                    src: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/systemd/tailscaled.defaults"
-                    dest: "/etc/systemd/system/tailscaled.defaults"
-                    owner: root
-                    group: root
-                    mode: 0750
-                    remote_src: yes
-                  when: not ansible_check_mode
-                - name: Start service
-                  systemd:
-                    daemon_reload: true
-                    name: tailscaled
-                    state: restarted
-              when: ansible_service_mgr == "systemd"
-        - name: Start Tailscale
-          block: 
-            - name: Declare exit node (if applicable)
-              ansible.builtin.shell: /usr/bin/tailscale up --authkey={{TAILSCALE_AUTH}} --advertise-exit-node
-              when: inventory_hostname in groups['exit_node']
-            - name: Declare server normally
-              ansible.builtin.shell: /usr/bin/tailscale up --authkey={{TAILSCALE_AUTH}}
-              when: inventory_hostname not in groups['exit_node']
-          
-          
+            - name: Copy service to proper directory
+              ansible.builtin.copy:
+                src: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/systemd/tailscaled.service"
+                dest: "/etc/systemd/system/tailscaled.service"
+                owner: root
+                group: root
+                mode: 0750
+                remote_src: yes
+              when: not ansible_check_mode
+            - name: Copy defaults to proper directory
+              ansible.builtin.copy:
+                src: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/systemd/tailscaled.defaults"
+                dest: "/etc/systemd/system/tailscaled.defaults"
+                owner: root
+                group: root
+                mode: 0750
+                remote_src: yes
+              when: not ansible_check_mode
+            - name: Start service
+              systemd:
+                daemon_reload: true
+                name: tailscaled
+                state: restarted
+          when: ansible_service_mgr == "systemd"
+
+    - name: Start Tailscale
+      block: 
+        - name: Declare exit node (if applicable)
+          ansible.builtin.shell: /usr/bin/tailscale up --authkey={{TAILSCALE_AUTH}} --advertise-exit-node
+          when: inventory_hostname in groups['exit_node']
+        - name: Declare server normally
+          ansible.builtin.shell: /usr/bin/tailscale up --authkey={{TAILSCALE_AUTH}}
+          when: inventory_hostname not in groups['exit_node']
