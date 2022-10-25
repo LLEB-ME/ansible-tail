@@ -118,8 +118,8 @@
     - name: Start Tailscale
       block: 
         - name: Declare exit node (if applicable)
-          ansible.builtin.shell: /usr/bin/tailscale up --authkey={{TAILSCALE_AUTH}} --advertise-exit-node --snat-subnet-routes=false
+          ansible.builtin.shell: /usr/bin/tailscale up --authkey={{TAILSCALE_AUTH}} --advertise-exit-node
           when: inventory_hostname in groups['exit_node']
         - name: Declare server normally
-          ansible.builtin.shell: /usr/bin/tailscale up --authkey={{TAILSCALE_AUTH}} --snat-subnet-routes=false
+          ansible.builtin.shell: /usr/bin/tailscale up --authkey={{TAILSCALE_AUTH}}
           when: inventory_hostname not in groups['exit_node']
