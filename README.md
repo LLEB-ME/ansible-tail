@@ -2,7 +2,7 @@
 Install Tailscale using Ansible. Successor to [`update-tail`](https://github.com/LLEB-ME/update-tail).
 
 ### USAGE
-Ensure that you have Tar installed locally. iptables is required on servers if they are being used as exit nodes— [the firewall will be adjusted automatically.](https://github.com/LLEB-ME/ansible-tail/blob/main/tailscale.yml#L84-L85)
+Ensure that you have Tar installed. iptables is required if a server is being used as an exit node— [the firewall will be adjusted automatically.](https://github.com/LLEB-ME/ansible-tail/blob/main/tailscale.yml#L84-L85)
 
 1. [Install and configure Ansible.](https://docs.ansible.com/ansible/latest/installation_guide/index.html)
    Optionally, if a device is going to be used as an exit node, add it to both `[hosts]` and `[exit_nodes]`.
