@@ -48,11 +48,11 @@
           block:
             - name: Install `tailscale`
               ansible.builtin.copy
-              src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/tailscale"
-              dest: "/usr/bin/tailscale"
-              owner: root
-              group: root
-              mode: 0750
+                src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/tailscale"
+                dest: "/usr/bin/tailscale"
+                owner: root
+                group: root
+                mode: 0750
               when: not ansible_check_mode
             - name: Install `tailscaled`
               ansible.builtin.copy
