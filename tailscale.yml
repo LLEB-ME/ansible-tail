@@ -34,7 +34,9 @@
           become: false
           ansible.builtin.unarchive:
             src: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}.tgz"
-            dest: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}"
+            dest: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/"
+            extra_opts:
+              - --strip-components=1
             remote_src: yes
           check_mode: false
         - name: Install Tailscale binaries
