@@ -16,7 +16,7 @@
     - name: Confirm that supported init system is being used
       ansible.builtin.assert:
         that: ansible_service_mgr == "systemd"
-          msg: "This playbook is intended for use on machine running SystemD."
+        msg: "This playbook is intended for use on machine running SystemD."
       
   tasks:
     - name: Download and install Tailscale
