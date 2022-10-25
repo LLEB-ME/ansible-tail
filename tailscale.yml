@@ -47,7 +47,7 @@
         - name: Install Tailscale binaries
           block:
             - name: Install `tailscale`
-              ansible.builtin.copy
+              ansible.builtin.copy:
                 src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/tailscale"
                 dest: "/usr/bin/tailscale"
                 owner: root
@@ -55,7 +55,7 @@
                 mode: 0750
               when: not ansible_check_mode
             - name: Install `tailscaled`
-              ansible.builtin.copy
+              ansible.builtin.copy:
                 src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/tailscaled"
                 dest: "/usr/sbin/tailscaled"
                 owner: root
@@ -93,7 +93,7 @@
             - name: Install SystemD service
               block:
                 - name: Copy service to proper directory
-                  ansible.builtin.copy
+                  ansible.builtin.copy:
                     src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/systemd/tailscaled.service"
                     dest: "/etc/systemd/system/tailscaled.service"
                     owner: root
@@ -101,7 +101,7 @@
                     mode: 0750
                   when: not ansible_check_mode
                 - name: Copy defaults to proper directory
-                  ansible.builtin.copy
+                  ansible.builtin.copy:
                     src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/systemd/tailscaled.defaults"
                     dest: "/etc/systemd/system/tailscaled.defaults"
                     owner: root
