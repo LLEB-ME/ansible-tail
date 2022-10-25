@@ -1,0 +1,126 @@
+- name: Install Tailscale
+  hosts: all
+  
+  vars:
+    - TAILSCALE_AUTH= ""
+    - TAILSCALE_VERSION= ""
+    - arch_map:
+        i386: '386'
+        x86_64: 'amd64'
+        aarch64: 'arm64'
+        armv7l: 'armv7'
+        armv6l: 'armv6'
+    - arch: "{{ arch_map[ansible_architecture] | default(ansible_architecture) }}"
+  
+  pre_tasks:
+    - name: Confirm that supported init system is being used
+      ansible.builtin.assert:
+        that: ansible_service_mgr == "systemd"
+          msg: "This playbook is intended for use on machine running SystemD."
+      
+  tasks:
+    - name: Download and install Tailscale
+      block:
+        - name: Download Tailscale binary
+          become: false
+          ansible.builtin.get_url:
+            url: "https://pkgs.tailscale.com/stable/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}.tgz"
+            dest: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}.tgz"
+          register: _download_bin
+          until: _download_bin is succeeded
+          retries: 5
+          delay: 2
+          check_mode: false
+        - name: Prepare tarball for deflation
+          become: false
+          ansible.builtin.file:
+            path: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}"
+            state: directory
+            mode: 0755
+          check_mode: false
+        - name: Deflate tarball
+          become: false
+          ansible.builtin.unarchive:
+            src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}.tgz"
+            dest: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}"
+          check_mode: false
+        - name: Install Tailscale binaries
+          block:
+            - name: Install `tailscale`
+              ansible.builtin.copy
+              src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/tailscale"
+              dest: "/usr/bin/tailscale"
+              owner: root
+              group: root
+              mode: 0750
+              when: not ansible_check_mode
+            - name: Install `tailscaled`
+              ansible.builtin.copy
+                src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/tailscaled"
+                dest: "/usr/sbin/tailscaled"
+                owner: root
+                group: root
+                mode: 0750
+              when: not ansible_check_mode
+        - name: Create directories for Tailscale
+          ansible.builtin.file:
+            path: "{{ item }}"
+            state: directory
+            owner: root
+            group: root
+            mode: 0755
+          with_items:
+            - /var/run/tailscale
+            - /var/cache/tailscale
+            - /var/lib/tailscale
+        - name: Allow IP forwarding
+          block:
+            - name: Append to `/etc/sysctl.conf`
+              ansible.builtin.shell: |
+                modprobe xt_mark
+                echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.conf
+                echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.conf
+                echo 'net.ipv6.conf.all.disable_policy = 1' | tee -a /etc/sysctl.conf
+                iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+                ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+              when: inventory_hostname in groups['exit_node']
+              
+            - name: Reload `sysctl`
+              ansible.builtin.shell: sysctl -p /etc/sysctl.conf
+              when: inventory_hostname in groups['exit_node']
+        - name: Install and start service
+          block:
+            - name: Install SystemD service
+              block:
+                - name: Copy service to proper directory
+                  ansible.builtin.copy
+                    src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/systemd/tailscaled.service"
+                    dest: "/etc/systemd/system/tailscaled.service"
+                    owner: root
+                    group: root
+                    mode: 0750
+                  when: not ansible_check_mode
+                - name: Copy defaults to proper directory
+                  ansible.builtin.copy
+                    src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/systemd/tailscaled.defaults"
+                    dest: "/etc/systemd/system/tailscaled.defaults"
+                    owner: root
+                    group: root
+                    mode: 0750
+                  when: not ansible_check_mode
+                - name: Start service
+                  systemd:
+                    daemon_reload: true
+                    name: tailscaled
+                    state: restarted
+              when: ansible_service_mgr == "systemd"
+        - name: Start Tailscale
+          block: 
+            - name: Declare exit node (if applicable)
+              ansible.builtin.shell: /usr/bin/tailscale up --authkey={{TAILSCALE_AUTH}} --advertise-exit-node
+              when: inventory_hostname in groups['exit_node']
+            - name: Declare server normally
+              ansible.builtin.shell: /usr/bin/tailscale up --authkey={{TAILSCALE_AUTH}}
+              when: inventory_hostname not in groups['exit_node']
+          
+          
