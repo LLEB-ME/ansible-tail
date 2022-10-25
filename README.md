@@ -11,4 +11,6 @@ Ensure that you have Tar installed. iptables is required if a server is being us
 4. Run this playbook (`ansible-playbook tailscale.yml -bK`)
 
 ### ACKNOWLEDGEMENTS
-This playbook has not been tested and is not intended for deployment or active usage in the Farer network. This source is not intended to be visible to all members currently. This will change in the future and is planned to be made public.
+This playbook is not intended for deployment or active usage in the Farer network. This source is not intended to be visible to all members currently. This will change in the future and is planned to be made public.
+
+The OpenRC service files are from the [`tailscale-openrc` package on Alpine Linux.](https://git.alpinelinux.org/aports/tree/community/tailscale)

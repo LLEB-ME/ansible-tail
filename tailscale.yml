@@ -8,6 +8,7 @@
     - name: Confirm that supported init system is being used
       ansible.builtin.assert:
         that: ansible_service_mgr == "systemd"
+        that: ansible_service_mgr == "openrc"
         msg: "This playbook is intended for use on machine running SystemD."
       
   tasks:
@@ -114,6 +115,41 @@
                 name: tailscaled
                 state: restarted
           when: ansible_service_mgr == "systemd"
+      - name: Install OpenRC service
+        block:
+          - name: Copy service to proper directory
+            ansible.builtin.copy:
+              src: "tailscale.initd"
+              dest: "/etc/init.d/tailscale/tailscale.initd"
+              owner: root
+              group: root
+              mode: 0750
+          - name: Copy configuration to proper directory
+            ansible.builtin.copy:
+              src: "tailscale.initd"
+              dest: "/etc/init.d/tailscale/tailscale.initd"
+              owner: root
+              group: root
+              mode: 0750
+          - name: Copy logrotate to proper directory
+            ansible.builtin.copy:
+              src: "tailscale.initd"
+              dest: "/etc/init.d/tailscale/tailscale.initd"
+              owner: root
+              group: root
+              mode: 0750
+          - name: Copy modules-load to proper directory
+            ansible.builtin.copy:
+              src: "tailscale.initd"
+              dest: "/etc/init.d/tailscale/tailscale.initd"
+              owner: root
+              group: root
+              mode: 0750
+          - name: Start service
+            ansible.builtin.service:
+              name: tailscaled
+              state: restarted
+        when: ansible_service_mgr == "openrc"
 
     - name: Start Tailscale
       block: 
