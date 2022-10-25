@@ -5,13 +5,10 @@
     - config.yml
 
   pre_tasks:
-    - name: Confirm that supported init system is being used
-      ansible.builtin.assert:
-        that: 
-          - ansible_service_mgr == "systemd"
-          - ansible_service_mgr == "openrc"
-        msg: "This playbook is intended for use on machine running SystemD."
-      
+    - name: Print init system being used
+      ansible.builtin.debug:
+        msg: System is using {{ ansible_service_mgr }}
+        
   tasks:
     - name: Download and install Tailscale
       block:
