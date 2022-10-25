@@ -7,7 +7,7 @@ Ensure that you have Tar installed. iptables is required if a server is being us
 1. [Install and configure Ansible.](https://docs.ansible.com/ansible/latest/installation_guide/index.html)
    Optionally, if a device is going to be used as an exit node, add it to both `[hosts]` and `[exit_nodes]`.
 2. Clone this repository (`git clone git@github.com:LLEB-ME/ansible-tail.git`)
-3. Set the relevant variables in `config.yml`
+3. Set the relevant variables in `config.yml.example` and rename to `config.yml`
 4. Run this playbook (`ansible-playbook tailscale.yml -bK`)
 
 ### ACKNOWLEDGEMENTS
