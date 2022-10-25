@@ -1,17 +1,9 @@
 - name: Install Tailscale
   hosts: all
-  
-  vars:
-    - TAILSCALE_AUTH= ""
-    - TAILSCALE_VERSION= ""
-    - arch_map:
-        i386: '386'
-        x86_64: 'amd64'
-        aarch64: 'arm64'
-        armv7l: 'armv7'
-        armv6l: 'armv6'
-    - arch: "{{ arch_map[ansible_architecture] | default(ansible_architecture) }}"
-  
+
+  vars_files: 
+    - config.yml
+
   pre_tasks:
     - name: Confirm that supported init system is being used
       ansible.builtin.assert:
