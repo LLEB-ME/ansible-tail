@@ -7,8 +7,9 @@
   pre_tasks:
     - name: Confirm that supported init system is being used
       ansible.builtin.assert:
-        that: ansible_service_mgr == "systemd"
-        that: ansible_service_mgr == "openrc"
+        that: 
+          - ansible_service_mgr == "systemd"
+          - ansible_service_mgr == "openrc"
         msg: "This playbook is intended for use on machine running SystemD."
       
   tasks:
