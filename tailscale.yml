@@ -17,7 +17,7 @@
           become: false
           ansible.builtin.get_url:
             url: "https://pkgs.tailscale.com/stable/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}.tgz"
-            dest: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}.tgz"
+            dest: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}.tgz"
           register: _download_bin
           until: _download_bin is succeeded
           retries: 5
@@ -26,33 +26,36 @@
         - name: Prepare tarball for deflation
           become: false
           ansible.builtin.file:
-            path: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}"
+            path: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}"
             state: directory
             mode: 0755
           check_mode: false
         - name: Deflate tarball
           become: false
           ansible.builtin.unarchive:
-            src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}.tgz"
-            dest: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}"
+            src: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}.tgz"
+            dest: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}"
+            remote_src: yes
           check_mode: false
         - name: Install Tailscale binaries
           block:
             - name: Install `tailscale`
               ansible.builtin.copy:
-                src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/tailscale"
+                src: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/tailscale"
                 dest: "/usr/bin/tailscale"
                 owner: root
                 group: root
                 mode: 0750
+                remote_src: yes
               when: not ansible_check_mode
             - name: Install `tailscaled`
               ansible.builtin.copy:
-                src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/tailscaled"
+                src: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/tailscaled"
                 dest: "/usr/sbin/tailscaled"
                 owner: root
                 group: root
                 mode: 0750
+                remote_src: yes
               when: not ansible_check_mode
         - name: Create directories for Tailscale
           ansible.builtin.file:
@@ -86,19 +89,21 @@
               block:
                 - name: Copy service to proper directory
                   ansible.builtin.copy:
-                    src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/systemd/tailscaled.service"
+                    src: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/systemd/tailscaled.service"
                     dest: "/etc/systemd/system/tailscaled.service"
                     owner: root
                     group: root
                     mode: 0750
+                    remote_src: yes
                   when: not ansible_check_mode
                 - name: Copy defaults to proper directory
                   ansible.builtin.copy:
-                    src: "tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/systemd/tailscaled.defaults"
+                    src: "/tmp/tailscale_{{ TAILSCALE_VERSION }}_{{ arch }}/systemd/tailscaled.defaults"
                     dest: "/etc/systemd/system/tailscaled.defaults"
                     owner: root
                     group: root
                     mode: 0750
+                    remote_src: yes
                   when: not ansible_check_mode
                 - name: Start service
                   systemd:
