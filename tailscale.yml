@@ -145,7 +145,7 @@
                 mode: 0750
             - name: Start service
               ansible.builtin.service:
-                name: tailscaled
+                name: tailscale
                 state: restarted
           when: ansible_service_mgr == "openrc"
 
