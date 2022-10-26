@@ -8,7 +8,7 @@
     - name: Print init system being used
       ansible.builtin.debug:
         msg: System is using {{ ansible_service_mgr }}
-        
+
   tasks:
     - name: Download and install Tailscale
       block:
@@ -117,29 +117,29 @@
           block:
             - name: Copy service to proper directory
               ansible.builtin.copy:
-                src: "tailscale.initd"
+                src: "openrc/tailscale.initd"
                 dest: "/etc/init.d/tailscale/tailscale.initd"
                 owner: root
                 group: root
                 mode: 0750
             - name: Copy configuration to proper directory
               ansible.builtin.copy:
-                src: "tailscale.initd"
-                dest: "/etc/init.d/tailscale/tailscale.initd"
+                src: "openrc/tailscale.confd"
+                dest: "/etc/init.d/tailscale/tailscale.confd"
                 owner: root
                 group: root
                 mode: 0750
             - name: Copy logrotate to proper directory
               ansible.builtin.copy:
-                src: "tailscale.initd"
-                dest: "/etc/init.d/tailscale/tailscale.initd"
+                src: "openrc/tailscale.logrotate"
+                dest: "/etc/init.d/tailscale/tailscale.logrotate"
                 owner: root
                 group: root
                 mode: 0750
             - name: Copy modules-load to proper directory
               ansible.builtin.copy:
-                src: "tailscale.initd"
-                dest: "/etc/init.d/tailscale/tailscale.initd"
+                src: "openrc/tailscale.initd"
+                dest: "/etc/init.d/tailscale/tailscale.modules-load"
                 owner: root
                 group: root
                 mode: 0750
