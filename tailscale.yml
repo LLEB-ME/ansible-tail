@@ -115,43 +115,31 @@
           when: ansible_service_mgr == "systemd"
         - name: Install OpenRC service
           block:
-            - name: Create folder for service files
-              ansible.builtin.file:
-                path: "{{ item }}"
-                state: directory
-                owner: root
-                group: root
-                mode: 0755
-              with_items:
-                - /etc/init.d/tailscale
-                - /etc/conf.d/tailscale
-                - /etc/logrotate.d/tailscale
-                - /etc/modules-load.d/tailscale
             - name: Copy service to proper directory
               ansible.builtin.copy:
                 src: "openrc/tailscale.initd"
-                dest: "/etc/init.d/tailscale/tailscale.initd"
+                dest: "/etc/init.d/tailscale"
                 owner: root
                 group: root
                 mode: 0750
             - name: Copy configuration to proper directory
               ansible.builtin.copy:
                 src: "openrc/tailscale.confd"
-                dest: "/etc/conf.d/tailscale/tailscale.confd"
+                dest: "/etc/conf.d/tailscale"
                 owner: root
                 group: root
                 mode: 0750
             - name: Copy logrotate to proper directory
               ansible.builtin.copy:
                 src: "openrc/tailscale.logrotate"
-                dest: "/etc/logrotate.d/tailscale/tailscale.logrotate"
+                dest: "/etc/logrotate.d/tailscale"
                 owner: root
                 group: root
                 mode: 0750
             - name: Copy modules-load to proper directory
               ansible.builtin.copy:
                 src: "openrc/tailscale.modules-load"
-                dest: "/etc/modules-load.d/tailscale/tailscale.modules-load"
+                dest: "/etc/modules-load.d/tailscale"
                 owner: root
                 group: root
                 mode: 0750
