@@ -117,11 +117,16 @@
           block:
             - name: Create folder for service files
               ansible.builtin.file:
-                path: /etc/init.d/tailscale
+                path: {{ item }}
                 state: directory
                 owner: root
                 group: root
                 mode: 0755
+              with_items:
+                - /etc/init.d/tailscale
+                - /etc/conf.d/tailscale
+                - /etc/logrotate.d/tailscale
+                - /etc/modules-load.d/tailscale
             - name: Copy service to proper directory
               ansible.builtin.copy:
                 src: "openrc/tailscale.initd"
@@ -132,21 +137,21 @@
             - name: Copy configuration to proper directory
               ansible.builtin.copy:
                 src: "openrc/tailscale.confd"
-                dest: "/etc/init.d/tailscale/tailscale.confd"
+                dest: "/etc/conf.d/tailscale/tailscale.confd"
                 owner: root
                 group: root
                 mode: 0750
             - name: Copy logrotate to proper directory
               ansible.builtin.copy:
                 src: "openrc/tailscale.logrotate"
-                dest: "/etc/init.d/tailscale/tailscale.logrotate"
+                dest: "/etc/logrotate.d/tailscale/tailscale.logrotate"
                 owner: root
                 group: root
                 mode: 0750
             - name: Copy modules-load to proper directory
               ansible.builtin.copy:
-                src: "openrc/tailscale.initd"
-                dest: "/etc/init.d/tailscale/tailscale.modules-load"
+                src: "openrc/tailscale.modules-load"
+                dest: "/etc/modules-load.d/tailscale/tailscale.modules-load"
                 owner: root
                 group: root
                 mode: 0750
