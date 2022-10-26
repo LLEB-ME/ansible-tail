@@ -117,7 +117,7 @@
           block:
             - name: Create folder for service files
               ansible.builtin.file:
-                path: {{ item }}
+                path: "{{ item }}"
                 state: directory
                 owner: root
                 group: root
