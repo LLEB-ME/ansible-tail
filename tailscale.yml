@@ -115,6 +115,13 @@
           when: ansible_service_mgr == "systemd"
         - name: Install OpenRC service
           block:
+            - name: Create folder for service files
+              ansible.builtin.file:
+                path: /etc/init.d/tailscale
+                state: directory
+                owner: root
+                group: root
+                mode: 0755
             - name: Copy service to proper directory
               ansible.builtin.copy:
                 src: "openrc/tailscale.initd"
