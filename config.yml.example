@@ -1,6 +1,6 @@
 ---
 - TAILSCALE_AUTH: "" # https://login.tailscale.com/admin/settings/keys
-- TAILSCALE_VERSION: "1.32.1" # fetches from Stable
+- TAILSCALE_VERSION: "1.32.3" # fetches from Stable
 - arch_map:
     i386: '386'
     x86_64: 'amd64'
